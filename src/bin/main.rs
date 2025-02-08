@@ -11,6 +11,7 @@ use esp_println::println;
 use log::info;
 
 use apa102_spi;
+use smart_leds::hsv::{hsv2rgb, Hsv};
 use smart_leds::{SmartLedsWrite, RGB8};
 const SPI_FREQ_KHZ: u32 = 20_000;
 
@@ -48,27 +49,32 @@ fn main() -> ! {
 
     println!("leds initialized");
     // write s simple 5 pixel pattern
-    let image: [RGB8; 5] = [
-        RGB8 {
-            r: 255,
-            g: 255,
-            b: 255,
-        },
-        RGB8 { r: 255, g: 0, b: 0 },
-        RGB8 { r: 0, g: 255, b: 0 },
-        RGB8 { r: 0, g: 0, b: 255 },
-        RGB8 {
-            r: 255,
-            g: 255,
-            b: 255,
-        },
-    ];
+
     let delay = Delay::new();
+    let mut loop_counter = 0usize;
+    let mut brightness = 0u8;
+    led_strip.set_brightness(brightness);
+    info!("Setting brightness {}", brightness);
     loop {
-        for brightness in (0..32).into_iter().cycle() {
-            info!("Hello world!");
-            led_strip.write(image.into_iter()).unwrap();
-            delay.delay_millis(500);
+        let image = (0u8..)
+            .into_iter()
+            .step_by(1)
+            .skip(loop_counter % 256)
+            .map(|hue| {
+                hsv2rgb(Hsv {
+                    hue,
+                    sat: 255,
+                    val: 255,
+                })
+            })
+            .take(144);
+        led_strip.write(image.into_iter()).unwrap();
+        delay.delay_millis(10);
+        loop_counter += 1;
+        if loop_counter % (256 * 2) == 0 {
+            brightness = (brightness + 1) % 32;
+            info!("Setting brightness {}", brightness);
+            led_strip.set_brightness(brightness);
         }
     }
 }
