@@ -53,10 +53,8 @@ fn main() -> ! {
             if use_brightness {
                 led_strip.set_brightness(brightness);
             } else {
-                info!(
-                    "Using {} as value",
-                    ((255 / 32) * brightness as usize) as u8
-                );
+                // set default full brightness
+                led_strip.set_brightness(31);
             }
             let image = (0u8..)
                 .into_iter()
@@ -65,16 +63,17 @@ fn main() -> ! {
                     hsv2rgb(Hsv {
                         hue,
                         sat: 255,
-                        val: if use_brightness {
-                            255
-                        } else {
-                            // manually divide the 255 range into 32 steps
-                            ((255 / 32) * brightness as usize) as u8
-                        },
+                        val: 255,
                     })
                 })
                 .take(144);
-            led_strip.write(image.into_iter()).unwrap();
+            if use_brightness {
+                led_strip.write(image.into_iter()).unwrap();
+            } else {
+                led_strip
+                    .write(smart_leds::brightness(image.into_iter(), brightness))
+                    .unwrap();
+            }
             delay.delay_millis(3_000);
         }
     }
