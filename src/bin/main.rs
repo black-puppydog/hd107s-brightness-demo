@@ -7,6 +7,7 @@ use esp_hal::delay::Delay;
 use esp_hal::main;
 use esp_hal::spi::master::{Config, Spi};
 use esp_hal::time::RateExtU32 as _;
+use esp_println::{print, println};
 use log::info;
 
 use apa102_spi;
@@ -43,19 +44,12 @@ fn main() -> ! {
     //////////////////////////////////////////////////
 
     let delay = Delay::new();
-    for brightness in (0..32).cycle() {
+    for chip_brightness in (0..32).cycle() {
         // USE THIS TO TEST CHIP-NATIVE OR HSV-BASED BRIGHTNESS
-        for use_brightness in [true, false].into_iter() {
-            info!(
-                "Brightness: {:>2}\tchip-native: {}",
-                brightness, use_brightness
-            );
-            if use_brightness {
-                led_strip.set_brightness(brightness);
-            } else {
-                // set default full brightness
-                led_strip.set_brightness(31);
-            }
+        info!("Chip-native brightness: {:>2}", chip_brightness);
+        led_strip.set_brightness(chip_brightness);
+        for lib_brightness in (0..=255) {
+            print!("\r\tLib brightness: {:>3}", lib_brightness);
             let image = (0u8..)
                 .into_iter()
                 .step_by(2)
@@ -67,15 +61,12 @@ fn main() -> ! {
                     })
                 })
                 .take(144);
-            if use_brightness {
-                led_strip.write(image.into_iter()).unwrap();
-            } else {
-                led_strip
-                    .write(smart_leds::brightness(image.into_iter(), brightness))
-                    .unwrap();
-            }
-            delay.delay_millis(3_000);
+            led_strip
+                .write(smart_leds::brightness(image.into_iter(), lib_brightness))
+                .unwrap();
+            delay.delay_millis(100);
         }
+        println!()
     }
     unreachable!();
 }
