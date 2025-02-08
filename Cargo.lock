@@ -11,6 +11,7 @@ checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
 [[package]]
 name = "apa102-spi"
 version = "0.4.0"
+source = "git+https://github.com/black-puppydog/apa102-spi-rs#73a5a534cf5a772a4c8292bd7ef9d9ae5326c2d6"
 dependencies = [
  "embedded-hal 1.0.0",
  "embedded-hal-async",

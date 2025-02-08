@@ -8,7 +8,7 @@ name = "smartleds-fix"
 path = "./src/bin/main.rs"
 
 [dependencies]
-apa102-spi = { path = "../apa102-spi-rs" }
+apa102-spi = { git = "https://github.com/black-puppydog/apa102-spi-rs" }
 
 critical-section = "1.2.0"
 esp-backtrace = { version = "0.15.0", features = [
